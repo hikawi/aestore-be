@@ -5,3 +5,9 @@
 build
 bin
 
+# Ignore Eclipse related caches
+.settings
+.classpath
+.factorypath
+.project
+

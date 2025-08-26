@@ -12,73 +12,63 @@ plugins {
     id("com.diffplug.spotless") version "7.2.1"
 }
 
-allprojects {
-    group = "vn.aesolutions"
-
-    apply(plugin = "java")
-    apply(plugin = "org.springframework.boot")
-    apply(plugin = "io.spring.dependency-management")
-
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
-        }
-    }
-
-    configurations {
-        compileOnly {
-            extendsFrom(configurations.annotationProcessor.get())
-        }
-    }
-
-    /*
-     * WHY DOESN'T THIS WORK??????
-     */
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        // Spring Modules: Data JPA, Web and Security
-        // Database and Spring Security, we don't need it yet
-        // implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-        // implementation("org.springframework.boot:spring-boot-starter-security")
-        implementation("org.springframework.boot:spring-boot-starter-web")
-
-        // Helps with Development: Lombok, Compose
-        compileOnly("org.projectlombok:lombok")
-        annotationProcessor("org.projectlombok:lombok")
-        annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
-        // Testing related: Spring Test, Security Test & JUnit
-        testImplementation("org.springframework.boot:spring-boot-starter-test")
-        testImplementation("org.springframework.security:spring-security-test")
-
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-        // Runtime helper: Spring Annotations, Postgres Driver
-        runtimeOnly("org.postgresql:postgresql")
-    }
+data class Version(
+    val major: Int,
+    val minor: Int,
+    val patch: Int,
+) {
+    override fun toString(): String = "$major.$minor.$patch"
 }
 
-subprojects {
-    layout.buildDirectory.set(file("../build/$name"))
+val ver = Version(0, 1, 0)
 
-    tasks.withType<Test> {
-        useJUnitPlatform()
-    }
-
-    /*
-     * We only need application to be the one actually being the one to run, all others
-     * don't need to be built into a boot jar.
-     */
-    tasks.bootJar {
-        enabled = false
-    }
-}
-
-version = "1.0-SNAPSHOT"
+group = "vn.aesolutions"
+version = ver.toString()
 description = "Root project for AEStore Spring Boot"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Modules: Data JPA, Web and Security
+    // Database and Spring Security, we don't need it yet
+    // implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    // This dependency provides health monitoring stats to the endpoint, we don't need it yet.
+    // implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    // Helps with Development: Lombok, Compose
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    // Testing related: Spring Test, Security Test & JUnit
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // Runtime helper: Spring Annotations, Postgres Driver
+    runtimeOnly("org.postgresql:postgresql")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
 
 spotless {
     format("misc") {
@@ -90,19 +80,12 @@ spotless {
         leadingSpacesToTabs() // or leadingTabsToSpaces. Takes an integer argument if you don't like 4
         endWithNewline()
     }
+
     java {
         // apply a specific flavor of google-java-format
         googleJavaFormat()
         formatAnnotations()
     }
-}
-
-dependencies {
-    // This dependency provides health monitoring stats to the endpoint, we don't need it yet.
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    // Subproject dependencies
-    implementation(project(":products"))
 }
 
 tasks.bootJar {

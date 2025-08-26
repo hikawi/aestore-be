@@ -6,4 +6,3 @@
  */
 
 rootProject.name = "aestore-be"
-include("products")
